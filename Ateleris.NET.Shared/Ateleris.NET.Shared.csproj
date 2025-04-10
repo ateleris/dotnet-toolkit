@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <Copyright>2025 Ateleris GmbH</Copyright>
+        <RootNamespace>Ateleris.NET.Shared</RootNamespace>
+        <ImplicitUsings>disable</ImplicitUsings>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Ateleris.NET.Generators\Ateleris.NET.Generators.csproj"
+            OutputItemType="Analyzer"
+            ReferenceOutputAssembly="false" />
+    </ItemGroup>
+
+    <PropertyGroup>
+        <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+        <CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath>
+    </PropertyGroup>
+
+    <Target Name="CleanSourceGeneratedFiles" BeforeTargets="BeforeBuild"
+        DependsOnTargets="$(BeforeBuildDependsOn)">
+        <RemoveDir Directories="Generated" />
+    </Target>
+
+    <ItemGroup>
+        <Compile Remove="Generated\**" />
+        <Content Include="Generated\**" />
+    </ItemGroup>
+
+</Project>
