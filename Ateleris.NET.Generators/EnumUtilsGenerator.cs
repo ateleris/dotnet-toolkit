@@ -40,7 +40,7 @@ public class EnumUtilGenerator : IIncrementalGenerator
         if (semanticModel.GetDeclaredSymbol(enumDeclaration) is not INamedTypeSymbol enumSymbol) return null;
 
         var attributeData = enumSymbol.GetAttributes()
-            .FirstOrDefault(a => a.AttributeClass?.ToDisplayString().EndsWith("GenerateEnumUtilsAttribute") == true);
+            .FirstOrDefault(a => a.AttributeClass?.ToDisplayString().EndsWith("GenerateEnumUtils") == true);
         if (attributeData is null) return null;
 
         // Extract attribute parameters
