@@ -30,7 +30,7 @@ public static class EmailServiceExtensions
         services.AddSingleton(templateOptions);
         services.AddSingleton<EmailTemplateRenderer>();
 
-        services.AddScoped<IEmailSender<TUser>, IdentityEmailSenderService<TUser, TUserKey>>();
+        services.AddTransient<IEmailSender<TUser>, IdentityEmailSenderService<TUser, TUserKey>>();
 
         return services;
     }
