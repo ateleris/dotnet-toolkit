@@ -10,11 +10,11 @@ namespace Ateleris.NET.Shared.Extensions;
 
 public static class EmailServiceExtensions
 {
-    public static IServiceCollection AddEmailServices<TUser>(
+    public static IServiceCollection AddEmailServices<TUser, TUserKey>(
         this IServiceCollection services,
         IConfiguration configuration,
         Action<EmailTemplateOptions>? configureTemplates = null)
-        where TUser : IdentityUser
+        where TUser : IdentityUser<TUserKey> where TUserKey : IEquatable<TUserKey>
     {
         if (!services.Any(s => s.ServiceType == typeof(IEmailTemplateProvider)))
         {
@@ -30,7 +30,7 @@ public static class EmailServiceExtensions
         services.AddSingleton(templateOptions);
         services.AddSingleton<EmailTemplateRenderer>();
 
-        services.AddScoped<IEmailSender<TUser>, IdentityEmailSenderService<TUser>>();
+        services.AddScoped<IEmailSender<TUser>, IdentityEmailSenderService<TUser, TUserKey>>();
 
         return services;
     }

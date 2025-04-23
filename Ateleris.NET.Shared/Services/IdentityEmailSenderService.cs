@@ -10,13 +10,13 @@ using System.Threading;
 
 namespace Ateleris.NET.Shared.Services;
 
-public class IdentityEmailSenderService<TUser>(
-    ILogger<IdentityEmailSenderService<TUser>> logger,
+public class IdentityEmailSenderService<TUser, TUserKey>(
+    ILogger<IdentityEmailSenderService<TUser, TUserKey>> logger,
     IConfiguration configuration,
     IEmailTemplateProvider templateProvider,
     EmailTemplateRenderer templateRenderer,
     EmailOptions? emailOptions = null
-) : IEmailSender<TUser> where TUser : IdentityUser
+) : IEmailSender<TUser> where TUser : IdentityUser<TUserKey> where TUserKey : IEquatable<TUserKey>
 {
     private readonly EmailOptions _options = emailOptions ?? new EmailOptions(configuration);
 
