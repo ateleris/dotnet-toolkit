@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Ateleris.NET.Shared.Extensions;
@@ -16,6 +17,11 @@ public static class EmailServiceExtensions
         Action<EmailTemplateOptions>? configureTemplates = null)
         where TUser : IdentityUser
     {
+        if (!services.Any(s => s.ServiceType == typeof(IEmailTemplateProvider)))
+        {
+            throw new InvalidOperationException($"Service of type {typeof(IEmailTemplateProvider)} must be registered before adding email services");
+        }
+
         var templateOptions = new EmailTemplateOptions
         {
             Domain = configuration["MailSender:Domain"] ?? "example.com"
@@ -24,10 +30,15 @@ public static class EmailServiceExtensions
 
         services.AddSingleton(templateOptions);
         services.AddSingleton<EmailTemplateRenderer>();
-        services.AddSingleton<IEmailTemplateProvider>(templateProvider ?? new StaticEmailTemplateProvider(new StaticEmailTemplateProviderOptions()));
 
         services.AddScoped<IEmailSender<TUser>, IdentityEmailSenderService<TUser>>();
 
+        return services;
+    }
+
+    public static IServiceCollection AddDefaultEmailTemplateProvider(this IServiceCollection services)
+    {
+        services.AddSingleton<IEmailTemplateProvider>(new StaticEmailTemplateProvider(new StaticEmailTemplateProviderOptions()));
         return services;
     }
 }
