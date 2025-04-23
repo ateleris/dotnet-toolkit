@@ -13,7 +13,6 @@ public static class EmailServiceExtensions
     public static IServiceCollection AddEmailServices<TUser>(
         this IServiceCollection services,
         IConfiguration configuration,
-        IEmailTemplateProvider? templateProvider = null,
         Action<EmailTemplateOptions>? configureTemplates = null)
         where TUser : IdentityUser
     {
