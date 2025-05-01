@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Diagnostics;
 
 namespace Ateleris.NET.FlowControl;
 
@@ -69,7 +70,9 @@ public class Error<TErrorType> : Error
             return $"Error[{Type?.ToString() ?? "-"}]: {Message}";
         }
 
+        Debug.Assert(ChildErrors is not null, "ChildErros must be initialized when the error is a composite error");
+
         return $"CompositeError[{Type?.ToString() ?? "-"}]: {Message}\n" +
-               string.Join("\n", ChildErrors!.Select((e, i) => $"  {i + 1}. {e}"));
+               string.Join("\n", ChildErrors.Select((e, i) => $"  {i + 1}. {e}"));
     }
 }
