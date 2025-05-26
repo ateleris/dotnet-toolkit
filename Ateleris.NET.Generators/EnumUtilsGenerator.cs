@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,6 +5,7 @@ using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
+
 namespace Ateleris.NET.Generators;
 
 public readonly record struct EnumUtilInfo(
@@ -35,87 +35,98 @@ public class EnumUtilGenerator : IIncrementalGenerator
 
     private static EnumUtilInfo? GetEnumInfo(GeneratorSyntaxContext context)
     {
-        if (context.Node is not EnumDeclarationSyntax enumDeclaration) return null;
+        var enumDeclaration = (EnumDeclarationSyntax)context.Node;
+
         var semanticModel = context.SemanticModel;
-        if (semanticModel.GetDeclaredSymbol(enumDeclaration) is not INamedTypeSymbol enumSymbol) return null;
 
-        var attributeData = enumSymbol.GetAttributes()
-            .FirstOrDefault(a => a.AttributeClass?.ToDisplayString().EndsWith("GenerateEnumUtils") == true);
-        if (attributeData is null) return null;
+        if (semanticModel.GetDeclaredSymbol(enumDeclaration) is not INamedTypeSymbol enumSymbol)
+            return null;
 
-        // Extract attribute parameters
+        var generateEnumUtilsAttribute = enumSymbol.GetAttributes()
+            .FirstOrDefault(attr => attr.AttributeClass?.Name == "GenerateEnumUtils" &&
+                                   attr.AttributeClass.ContainingNamespace.ToDisplayString() == "Ateleris.NET.Shared.Attributes");
+
+        if (generateEnumUtilsAttribute is null)
+            return null;
+
         bool useDefaultValue = false;
         string? defaultValue = null;
-        string stringCaseConversion = "None";
+        string stringCaseConversion = "ToUpper";
         string comparisonCaseConversion = "None";
 
-        // Read default behavior from attribute
-        if (attributeData.ConstructorArguments.Length > 0)
+        if (generateEnumUtilsAttribute.ConstructorArguments.Length > 0)
         {
-            if (attributeData.ConstructorArguments[0].Kind == TypedConstantKind.Enum)
+            var firstArg = generateEnumUtilsAttribute.ConstructorArguments[0];
+
+            if (firstArg.Type?.Name == "DefaultValueBehavior")
             {
-                // First constructor (with DefaultValueBehavior)
-                int defaultBehaviorValue = (int)attributeData.ConstructorArguments[0].Value!;
-                useDefaultValue = defaultBehaviorValue == 1; // UseDefaultValue = 1
+                useDefaultValue = (int)firstArg.Value! == 1;
 
-                if (attributeData.ConstructorArguments.Length > 1)
-                    stringCaseConversion = attributeData.ConstructorArguments[1].Value?.ToString() ?? "None";
+                if (generateEnumUtilsAttribute.ConstructorArguments.Length > 1)
+                {
+                    var stringCaseArg = generateEnumUtilsAttribute.ConstructorArguments[1];
+                    stringCaseConversion = GetCaseConversionString((int)stringCaseArg.Value!);
+                }
 
-                if (attributeData.ConstructorArguments.Length > 2)
-                    comparisonCaseConversion = attributeData.ConstructorArguments[2].Value?.ToString() ?? "None";
+                if (generateEnumUtilsAttribute.ConstructorArguments.Length > 2)
+                {
+                    var comparisonCaseArg = generateEnumUtilsAttribute.ConstructorArguments[2];
+                    comparisonCaseConversion = GetCaseConversionString((int)comparisonCaseArg.Value!);
+                }
             }
             else
             {
-                // Second constructor (with default value)
                 useDefaultValue = true;
-                defaultValue = attributeData.ConstructorArguments[0].Value?.ToString() ?? "default";
+                defaultValue = firstArg.Value?.ToString();
 
-                if (attributeData.ConstructorArguments.Length > 1)
-                    stringCaseConversion = attributeData.ConstructorArguments[1].Value?.ToString() ?? "None";
+                if (generateEnumUtilsAttribute.ConstructorArguments.Length > 1)
+                {
+                    var stringCaseArg = generateEnumUtilsAttribute.ConstructorArguments[1];
+                    stringCaseConversion = GetCaseConversionString((int)stringCaseArg.Value!);
+                }
 
-                if (attributeData.ConstructorArguments.Length > 2)
-                    comparisonCaseConversion = attributeData.ConstructorArguments[2].Value?.ToString() ?? "None";
+                if (generateEnumUtilsAttribute.ConstructorArguments.Length > 2)
+                {
+                    var comparisonCaseArg = generateEnumUtilsAttribute.ConstructorArguments[2];
+                    comparisonCaseConversion = GetCaseConversionString((int)comparisonCaseArg.Value!);
+                }
             }
         }
 
-        // Extract named parameters if any
-        foreach (var namedArg in attributeData.NamedArguments)
-        {
-            switch (namedArg.Key)
-            {
-                case "DefaultBehavior":
-                    useDefaultValue = (int)namedArg.Value.Value! == 1;
-                    break;
-                case "DefaultValue":
-                    useDefaultValue = true;
-                    defaultValue = namedArg.Value.Value?.ToString() ?? "default";
-                    break;
-                case "StringCaseConversion":
-                    stringCaseConversion = namedArg.Value.Value?.ToString() ?? "None";
-                    break;
-                case "ComparisonCaseConversion":
-                    comparisonCaseConversion = namedArg.Value.Value?.ToString() ?? "None";
-                    break;
-            }
-        }
-
-        var members = new List<(string Name, int Value)>();
+        var enumMembers = new List<(string Name, int Value)>();
         foreach (var member in enumSymbol.GetMembers().OfType<IFieldSymbol>())
         {
-            if (member.ConstantValue is int value)
+            if (member.IsStatic && member.HasConstantValue)
             {
-                members.Add((member.Name, value));
+                var value = Convert.ToInt32(member.ConstantValue);
+                enumMembers.Add((member.Name, value));
             }
         }
 
+        var enumNamespace = enumSymbol.ContainingNamespace.IsGlobalNamespace
+            ? string.Empty
+            : enumSymbol.ContainingNamespace.ToDisplayString();
+
         return new EnumUtilInfo(
-            enumSymbol.Name,
-            enumSymbol.ContainingNamespace.ToDisplayString(),
-            members,
-            useDefaultValue,
-            defaultValue,
-            stringCaseConversion,
-            comparisonCaseConversion);
+            EnumName: enumSymbol.Name,
+            EnumNamespace: enumNamespace,
+            EnumMembers: enumMembers,
+            UseDefaultValue: useDefaultValue,
+            DefaultValue: defaultValue,
+            StringCaseConversion: stringCaseConversion,
+            ComparisonCaseConversion: comparisonCaseConversion
+        );
+    }
+
+    private static string GetCaseConversionString(int value)
+    {
+        return value switch
+        {
+            0 => "None",
+            1 => "ToUpper",
+            2 => "ToLower",
+            _ => "None"
+        };
     }
 
     private static void Execute(EnumUtilInfo? enumInfo, SourceProductionContext context)
@@ -129,7 +140,6 @@ public class EnumUtilGenerator : IIncrementalGenerator
 
     private static string GenerateEnumUtils(EnumUtilInfo info)
     {
-        string applyStringCase = GetCaseConversionMethod(info.StringCaseConversion);
         string applyComparisonCase = GetCaseConversionMethod(info.ComparisonCaseConversion);
 
         var sb = new StringBuilder();
@@ -148,14 +158,13 @@ public static class {info.EnumName}Utils
 
         foreach (var (name, _) in info.EnumMembers)
         {
-            string nameCased = $"\"{name}\"{applyStringCase}";
-            sb.AppendLine($@"            {nameCased} => {info.EnumName}.{name},");
+            string nameCased = ApplyCaseConversion(name, info.StringCaseConversion);
+            sb.AppendLine($@"            ""{nameCased}"" => {info.EnumName}.{name},");
         }
 
-        // Handle default case
         if (info.UseDefaultValue && info.DefaultValue != null)
         {
-            sb.AppendLine($@"            _ => {info.EnumName}.{info.DefaultValue}");
+            sb.AppendLine($@"            _ => ({info.EnumName}){info.DefaultValue}");
         }
         else
         {
@@ -172,11 +181,27 @@ public static class {info.EnumName}Utils
 
         foreach (var (name, _) in info.EnumMembers)
         {
-            sb.AppendLine($@"            {info.EnumName}.{name} => ""{name}""{applyStringCase},");
+            string nameCased = ApplyCaseConversion(name, info.StringCaseConversion);
+            sb.AppendLine($@"            {info.EnumName}.{name} => ""{nameCased}"",");
         }
 
-        // Handle default case for ToString
-        sb.AppendLine($@"            _ => throw new ArgumentOutOfRangeException(nameof(value), value, ""Value is not a valid {info.EnumName}."")");
+        if (info.UseDefaultValue && info.DefaultValue != null)
+        {
+            var (Name, Value) = info.EnumMembers.FirstOrDefault(m => m.Value.ToString() == info.DefaultValue);
+            if (Name != null)
+            {
+                string nameCased = ApplyCaseConversion(Name, info.StringCaseConversion);
+                sb.AppendLine($@"            _ => ""{nameCased}""");
+            }
+            else
+            {
+                sb.AppendLine($@"            _ => throw new ArgumentOutOfRangeException(nameof(value), value, ""Value is not a valid {info.EnumName}."")");
+            }
+        }
+        else
+        {
+            sb.AppendLine($@"            _ => throw new ArgumentOutOfRangeException(nameof(value), value, ""Value is not a valid {info.EnumName}."")");
+        }
 
         sb.AppendLine($@"        }};
     }}
@@ -205,6 +230,16 @@ public class {info.EnumName}Converter : JsonConverter<{info.EnumName}>
             "ToUpper" => ".ToUpper()",
             "ToLower" => ".ToLower()",
             _ => ""
+        };
+    }
+
+    private static string ApplyCaseConversion(string input, string caseConversion)
+    {
+        return caseConversion switch
+        {
+            "ToUpper" => input.ToUpper(),
+            "ToLower" => input.ToLower(),
+            _ => input
         };
     }
 }
