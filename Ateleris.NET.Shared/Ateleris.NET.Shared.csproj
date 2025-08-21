@@ -6,6 +6,7 @@
         <Copyright>2025 Ateleris GmbH</Copyright>
         <RootNamespace>Ateleris.NET.Shared</RootNamespace>
         <ImplicitUsings>disable</ImplicitUsings>
+        <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     </PropertyGroup>
 
     <ItemGroup>
