@@ -61,6 +61,18 @@ public class StaticEmailTemplateProviderOptions
         "Your Reset Code",
         "Please use the following code to reset your password:",
         "");
+
+    public EmailTemplate AccountApproved { get; set; } = new(
+        "Account Approved - {0}",
+        "Account Approved",
+        "Great news! Your account has been approved. You can now access the platform.",
+        "Access Platform");
+
+    public EmailTemplate AccountApprovedWithConfirmation { get; set; } = new(
+        "Account Approved - {0}",
+        "Account Approved - Please Confirm Your Email",
+        "Great news! Your account has been approved. However, before you can access the platform, you need to confirm your email address. Please click the button below to confirm your email and complete your account setup.",
+        "Confirm Email & Access Platform");
 }
 
 public class StaticEmailTemplateProvider(StaticEmailTemplateProviderOptions options) : IEmailTemplateProvider
@@ -82,6 +94,18 @@ public class StaticEmailTemplateProvider(StaticEmailTemplateProviderOptions opti
     public Task<EmailTemplate> GetResetPasswordCodeTemplateAsync(string domain)
     {
         var template = _options.ResetPasswordCode with { Subject = string.Format(_options.ResetPasswordCode.Subject, domain) };
+        return Task.FromResult(template);
+    }
+
+    public Task<EmailTemplate> GetAccountApprovedTemplateAsync(string domain)
+    {
+        var template = _options.AccountApproved with { Subject = string.Format(_options.AccountApproved.Subject, domain) };
+        return Task.FromResult(template);
+    }
+
+    public Task<EmailTemplate> GetAccountApprovedWithConfirmationTemplateAsync(string domain)
+    {
+        var template = _options.AccountApprovedWithConfirmation with { Subject = string.Format(_options.AccountApprovedWithConfirmation.Subject, domain) };
         return Task.FromResult(template);
     }
 }
