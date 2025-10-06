@@ -9,6 +9,7 @@ public interface IEmailTemplateProvider
     Task<EmailTemplate> GetResetPasswordCodeTemplateAsync(string domain);
     Task<EmailTemplate> GetAccountApprovedTemplateAsync(string domain);
     Task<EmailTemplate> GetAccountApprovedWithConfirmationTemplateAsync(string domain);
+    Task<EmailTemplate> GetAccountCreatedByAdminTemplateAsync(string domain);
 }
 
 public record EmailTemplate(string Subject, string Title, string Message, string ButtonText);

@@ -130,6 +130,22 @@ public class IdentityEmailSenderService<TUser, TUserKey>(
         var content = new TextPart(MimeKit.Text.TextFormat.Html) { Text = emailContent };
         await SendEmailAsync(email, template.Subject, content);
     }
+
+    public async Task SendAccountCreatedByAdminAsync(TUser user, string email, string confirmationLink)
+    {
+        logger.LogTrace("Sending account created by admin notification to user {user}", user.UserName);
+
+        var template = await templateProvider.GetAccountCreatedByAdminTemplateAsync(_options.Domain);
+
+        var emailContent = templateRenderer.RenderStandardEmail(
+            template.Title,
+            template.Message,
+            confirmationLink,
+            template.ButtonText);
+
+        var content = new TextPart(MimeKit.Text.TextFormat.Html) { Text = emailContent };
+        await SendEmailAsync(email, template.Subject, content);
+    }
 }
 
 public class EmailOptions

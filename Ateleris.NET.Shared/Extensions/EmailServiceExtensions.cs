@@ -73,6 +73,12 @@ public class StaticEmailTemplateProviderOptions
         "Account Approved - Please Confirm Your Email",
         "Great news! Your account has been approved. However, before you can access the platform, you need to confirm your email address. Please click the button below to confirm your email and complete your account setup.",
         "Confirm Email & Access Platform");
+
+    public EmailTemplate AccountCreatedByAdmin { get; set; } = new(
+        "Account Created - {0}",
+        "Welcome - Please Confirm Your Email",
+        "An administrator has created an account for you. Before you can access the platform, you need to confirm your email address. A temporary password has been provided separately by the administrator. You can change your password at any time using the 'Forgot Password' option on the login page.",
+        "Confirm Email & Access Platform");
 }
 
 public class StaticEmailTemplateProvider(StaticEmailTemplateProviderOptions options) : IEmailTemplateProvider
@@ -106,6 +112,12 @@ public class StaticEmailTemplateProvider(StaticEmailTemplateProviderOptions opti
     public Task<EmailTemplate> GetAccountApprovedWithConfirmationTemplateAsync(string domain)
     {
         var template = _options.AccountApprovedWithConfirmation with { Subject = string.Format(_options.AccountApprovedWithConfirmation.Subject, domain) };
+        return Task.FromResult(template);
+    }
+
+    public Task<EmailTemplate> GetAccountCreatedByAdminTemplateAsync(string domain)
+    {
+        var template = _options.AccountCreatedByAdmin with { Subject = string.Format(_options.AccountCreatedByAdmin.Subject, domain) };
         return Task.FromResult(template);
     }
 }
