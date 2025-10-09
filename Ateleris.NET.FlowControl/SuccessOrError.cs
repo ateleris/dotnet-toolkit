@@ -46,3 +46,18 @@ public class SuccessOrError<E> : ResultOrError<bool, E> where E : Error
 
     public new E? ErrorValue => base.ErrorValue;
 }
+
+public static class SuccessOrErrorExtensions
+{
+    public static async Task<SuccessOrError<E>> Then<E>(
+        this Task<SuccessOrError<E>> first,
+        Func<Task<SuccessOrError<E>>> next)
+        where E : Error
+    {
+        var result = await first;
+        if (result.IsError)
+            return result;
+
+        return await next();
+    }
+}
