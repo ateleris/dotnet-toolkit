@@ -159,4 +159,77 @@ public static class ResultOrErrorExtensions
 
         return next(first.Value);
     }
+
+    // Convert ResultOrError<T, E> to SuccessOrError<E> with async function that takes T
+    public static async Task<SuccessOrError<E>> Then<T, E>(
+        this Task<ResultOrError<T, E>> first,
+        Func<T, Task<SuccessOrError<E>>> next)
+        where E : Error
+    {
+        var result = await first;
+        if (result.IsError)
+            return SuccessOrError<E>.Error(result.ErrorValue);
+
+        return await next(result.Value);
+    }
+
+    // Convert ResultOrError<T, E> to SuccessOrError<E> with sync function that takes T
+    public static async Task<SuccessOrError<E>> Then<T, E>(
+        this Task<ResultOrError<T, E>> first,
+        Func<T, SuccessOrError<E>> next)
+        where E : Error
+    {
+        var result = await first;
+        if (result.IsError)
+            return SuccessOrError<E>.Error(result.ErrorValue);
+
+        return next(result.Value);
+    }
+
+    // Convert ResultOrError<T, E> to SuccessOrError<E> with async function that takes T (non-Task version)
+    public static async Task<SuccessOrError<E>> Then<T, E>(
+        this ResultOrError<T, E> first,
+        Func<T, Task<SuccessOrError<E>>> next)
+        where E : Error
+    {
+        if (first.IsError)
+            return SuccessOrError<E>.Error(first.ErrorValue);
+
+        return await next(first.Value);
+    }
+
+    // Convert ResultOrError<T, E> to SuccessOrError<E> with sync function that takes T (non-Task version)
+    public static SuccessOrError<E> Then<T, E>(
+        this ResultOrError<T, E> first,
+        Func<T, SuccessOrError<E>> next)
+        where E : Error
+    {
+        if (first.IsError)
+            return SuccessOrError<E>.Error(first.ErrorValue);
+
+        return next(first.Value);
+    }
+
+    // Discard the result value and convert ResultOrError<T, E> to SuccessOrError<E>
+    public static async Task<SuccessOrError<E>> ToSuccessOrError<T, E>(
+        this Task<ResultOrError<T, E>> resultTask)
+        where E : Error
+    {
+        var result = await resultTask;
+        if (result.IsError)
+            return SuccessOrError<E>.Error(result.ErrorValue);
+
+        return SuccessOrError<E>.Success();
+    }
+
+    // Discard the result value and convert ResultOrError<T, E> to SuccessOrError<E> (non-Task version)
+    public static SuccessOrError<E> ToSuccessOrError<T, E>(
+        this ResultOrError<T, E> result)
+        where E : Error
+    {
+        if (result.IsError)
+            return SuccessOrError<E>.Error(result.ErrorValue);
+
+        return SuccessOrError<E>.Success();
+    }
 }
