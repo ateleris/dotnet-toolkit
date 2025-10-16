@@ -60,4 +60,107 @@ public static class SuccessOrErrorExtensions
 
         return await next();
     }
+
+    // Convert SuccessOrError to ResultOrError with async function
+    public static async Task<ResultOrError<T, E>> Then<T, E>(
+        this SuccessOrError<E> first,
+        Func<Task<ResultOrError<T, E>>> next)
+        where E : Error
+    {
+        if (first.IsError)
+            return ResultOrError<T, E>.Error(first.ErrorValue!);
+
+        return await next();
+    }
+
+    // Convert Task<SuccessOrError> to ResultOrError with async function
+    public static async Task<ResultOrError<T, E>> Then<T, E>(
+        this Task<SuccessOrError<E>> first,
+        Func<Task<ResultOrError<T, E>>> next)
+        where E : Error
+    {
+        var result = await first;
+        if (result.IsError)
+            return ResultOrError<T, E>.Error(result.ErrorValue!);
+
+        return await next();
+    }
+
+    // Convert SuccessOrError to ResultOrError with sync function
+    public static ResultOrError<T, E> Then<T, E>(
+        this SuccessOrError<E> first,
+        Func<ResultOrError<T, E>> next)
+        where E : Error
+    {
+        if (first.IsError)
+            return ResultOrError<T, E>.Error(first.ErrorValue!);
+
+        return next();
+    }
+
+    // Convert Task<SuccessOrError> to ResultOrError with sync function
+    public static async Task<ResultOrError<T, E>> Then<T, E>(
+        this Task<SuccessOrError<E>> first,
+        Func<ResultOrError<T, E>> next)
+        where E : Error
+    {
+        var result = await first;
+        if (result.IsError)
+            return ResultOrError<T, E>.Error(result.ErrorValue!);
+
+        return next();
+    }
+
+    // Convert SuccessOrError to ResultOrError with direct value (async)
+    public static async Task<ResultOrError<T, E>> Then<T, E>(
+        this SuccessOrError<E> first,
+        Func<Task<T>> next)
+        where E : Error
+    {
+        if (first.IsError)
+            return ResultOrError<T, E>.Error(first.ErrorValue!);
+
+        var value = await next();
+        return ResultOrError<T, E>.Success(value);
+    }
+
+    // Convert Task<SuccessOrError> to ResultOrError with direct value (async)
+    public static async Task<ResultOrError<T, E>> Then<T, E>(
+        this Task<SuccessOrError<E>> first,
+        Func<Task<T>> next)
+        where E : Error
+    {
+        var result = await first;
+        if (result.IsError)
+            return ResultOrError<T, E>.Error(result.ErrorValue!);
+
+        var value = await next();
+        return ResultOrError<T, E>.Success(value);
+    }
+
+    // Convert SuccessOrError to ResultOrError with direct value (sync)
+    public static ResultOrError<T, E> Then<T, E>(
+        this SuccessOrError<E> first,
+        Func<T> next)
+        where E : Error
+    {
+        if (first.IsError)
+            return ResultOrError<T, E>.Error(first.ErrorValue!);
+
+        return ResultOrError<T, E>.Success(next());
+    }
+
+    // Convert Task<SuccessOrError> to ResultOrError with direct value (sync)
+    public static async Task<ResultOrError<T, E>> Then<T, E>(
+        this Task<SuccessOrError<E>> first,
+        Func<T> next)
+        where E : Error
+    {
+        var result = await first;
+        if (result.IsError)
+            return ResultOrError<T, E>.Error(result.ErrorValue!);
+
+        return ResultOrError<T, E>.Success(next());
+    }
 }
+

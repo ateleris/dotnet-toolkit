@@ -107,3 +107,56 @@ public class ResultOrError<T, E> where E : Error?
 
     public E ErrorValue => isError ? error! : throw new InvalidOperationException("Cannot access ErrorValue on a Success result.");
 }
+
+public static class ResultOrErrorExtensions
+{
+    // Then for Task<ResultOrError<T, E>> -> passes T to next function
+    public static async Task<ResultOrError<TOut, E>> Then<TIn, TOut, E>(
+        this Task<ResultOrError<TIn, E>> first,
+        Func<TIn, Task<ResultOrError<TOut, E>>> next)
+        where E : Error
+    {
+        var result = await first;
+        if (result.IsError)
+            return ResultOrError<TOut, E>.Error(result.ErrorValue);
+
+        return await next(result.Value);
+    }
+
+    // Then for ResultOrError<T, E> -> passes T to next function
+    public static async Task<ResultOrError<TOut, E>> Then<TIn, TOut, E>(
+        this ResultOrError<TIn, E> first,
+        Func<TIn, Task<ResultOrError<TOut, E>>> next)
+        where E : Error
+    {
+        if (first.IsError)
+            return ResultOrError<TOut, E>.Error(first.ErrorValue);
+
+        return await next(first.Value);
+    }
+
+    // Then for Task<ResultOrError<T, E>> with synchronous next function
+    public static async Task<ResultOrError<TOut, E>> Then<TIn, TOut, E>(
+        this Task<ResultOrError<TIn, E>> first,
+        Func<TIn, ResultOrError<TOut, E>> next)
+        where E : Error
+    {
+        var result = await first;
+        if (result.IsError)
+            return ResultOrError<TOut, E>.Error(result.ErrorValue);
+
+        return next(result.Value);
+    }
+
+    // Then for ResultOrError<T, E> with synchronous next function
+    public static ResultOrError<TOut, E> Then<TIn, TOut, E>(
+        this ResultOrError<TIn, E> first,
+        Func<TIn, ResultOrError<TOut, E>> next)
+        where E : Error
+    {
+        if (first.IsError)
+            return ResultOrError<TOut, E>.Error(first.ErrorValue);
+
+        return next(first.Value);
+    }
+}
