@@ -231,4 +231,5 @@ _Pvt_Extensions
 # FAKE - F# Make
 .fake/
 
-BackgroundServices/data/*.csv
+# VS Code
+.vscode/
