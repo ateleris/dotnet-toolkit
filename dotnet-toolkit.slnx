@@ -1,0 +1,10 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="Ateleris.NET.FlowControl/Ateleris.NET.FlowControl.csproj" />
+  <Project Path="Ateleris.NET.Generators/Ateleris.NET.Generators.csproj" />
+  <Project Path="Ateleris.NET.Shared/Ateleris.NET.Shared.csproj" />
+</Solution>
