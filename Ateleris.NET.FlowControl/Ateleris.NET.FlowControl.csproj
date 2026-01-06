@@ -1,10 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
-        <Nullable>enable</Nullable>
-        <Copyright>2025 Ateleris GmbH</Copyright>
-        <RootNamespace>Ateleris.NET.FlowControl</RootNamespace>
-        <ImplicitUsings>disable</ImplicitUsings>
-        <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
-    </PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <Copyright>2026 Ateleris GmbH</Copyright>
+    <RootNamespace>Ateleris.NET.FlowControl</RootNamespace>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+  </PropertyGroup>
 </Project>
