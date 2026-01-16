@@ -177,4 +177,80 @@ public static class SuccessOrErrorExtensions
 
         return ResultOrError<T, E>.Success(next());
     }
+
+    public static TOut Match<E, TOut>(
+        this SuccessOrError<E> result,
+        Func<TOut> onSuccess,
+        Func<E, TOut> onError)
+        where E : Error
+    {
+        return result.isError ? onError(result.error!) : onSuccess();
+    }
+
+    public static async Task<TOut> Match<E, TOut>(
+        this SuccessOrError<E> result,
+        Func<Task<TOut>> onSuccess,
+        Func<E, TOut> onError)
+        where E : Error
+    {
+        return result.isError ? onError(result.error!) : await onSuccess();
+    }
+
+    public static async Task<TOut> Match<E, TOut>(
+        this SuccessOrError<E> result,
+        Func<TOut> onSuccess,
+        Func<E, Task<TOut>> onError)
+        where E : Error
+    {
+        return result.isError ? await onError(result.error!) : onSuccess();
+    }
+
+    public static async Task<TOut> Match<E, TOut>(
+        this SuccessOrError<E> result,
+        Func<Task<TOut>> onSuccess,
+        Func<E, Task<TOut>> onError)
+        where E : Error
+    {
+        return result.isError ? await onError(result.error!) : await onSuccess();
+    }
+
+    public static async Task<TOut> Match<E, TOut>(
+        this Task<SuccessOrError<E>> task,
+        Func<TOut> onSuccess,
+        Func<E, TOut> onError)
+        where E : Error
+    {
+        var result = await task;
+        return result.isError ? onError(result.error!) : onSuccess();
+    }
+
+    public static async Task<TOut> Match<E, TOut>(
+        this Task<SuccessOrError<E>> task,
+        Func<Task<TOut>> onSuccess,
+        Func<E, TOut> onError)
+        where E : Error
+    {
+        var result = await task;
+        return result.isError ? onError(result.error!) : await onSuccess();
+    }
+
+    public static async Task<TOut> Match<E, TOut>(
+        this Task<SuccessOrError<E>> task,
+        Func<TOut> onSuccess,
+        Func<E, Task<TOut>> onError)
+        where E : Error
+    {
+        var result = await task;
+        return result.isError ? await onError(result.error!) : onSuccess();
+    }
+
+    public static async Task<TOut> Match<E, TOut>(
+        this Task<SuccessOrError<E>> task,
+        Func<Task<TOut>> onSuccess,
+        Func<E, Task<TOut>> onError)
+        where E : Error
+    {
+        var result = await task;
+        return result.isError ? await onError(result.error!) : await onSuccess();
+    }
 }
