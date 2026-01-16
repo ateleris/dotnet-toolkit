@@ -3,31 +3,36 @@ using System.Threading.Tasks;
 
 namespace Ateleris.NET.FlowControl;
 
-public class SuccessOrError<E> : ResultOrError<bool, E> where E : Error
+public class SuccessOrError<E>
 {
-    public SuccessOrError() : base(true)
+    internal readonly E? error;
+    internal readonly bool isError;
+
+    public SuccessOrError()
     {
+        isError = false;
     }
 
-    public SuccessOrError(E error) : base(error)
+    public SuccessOrError(E error)
     {
+        this.error = error;
+        isError = true;
     }
 
-    public static SuccessOrError<E> Success()
-    {
-        return new SuccessOrError<E>();
-    }
+    public static SuccessOrError<E> Success() => new();
 
-    public new static SuccessOrError<E> Error(E value) => new(value);
+    public static SuccessOrError<E> Error(E value) => new(value);
 
-    public static implicit operator SuccessOrError<E>(E value)
+    public static implicit operator SuccessOrError<E>(E value) => new(value);
+
+    public void Deconstruct(out E? error)
     {
-        return new SuccessOrError<E>(value);
+        error = isError ? this.error : default;
     }
 
     public async Task<SuccessOrError<E>> Then(Func<Task<SuccessOrError<E>>> next)
     {
-        if (IsError)
+        if (isError)
         {
             return this;
         }
@@ -38,17 +43,13 @@ public class SuccessOrError<E> : ResultOrError<bool, E> where E : Error
     public static async Task<SuccessOrError<E>> Then(Task<SuccessOrError<E>> first, Func<Task<SuccessOrError<E>>> next)
     {
         var result = await first;
-        if (result.IsError)
+        if (result.isError)
         {
             return result;
         }
 
         return await next();
     }
-
-    public new bool Value => base.Value;
-
-    public new E? ErrorValue => base.ErrorValue;
 }
 
 public static class SuccessOrErrorExtensions
@@ -59,7 +60,7 @@ public static class SuccessOrErrorExtensions
         where E : Error
     {
         var result = await first;
-        if (result.IsError)
+        if (result.isError)
         {
             return result;
         }
@@ -72,9 +73,9 @@ public static class SuccessOrErrorExtensions
         Func<Task<ResultOrError<T, E>>> next)
         where E : Error
     {
-        if (first.IsError)
+        if (first.isError)
         {
-            return ResultOrError<T, E>.Error(first.ErrorValue!);
+            return ResultOrError<T, E>.Error(first.error!);
         }
 
         return await next();
@@ -86,9 +87,9 @@ public static class SuccessOrErrorExtensions
         where E : Error
     {
         var result = await first;
-        if (result.IsError)
+        if (result.isError)
         {
-            return ResultOrError<T, E>.Error(result.ErrorValue!);
+            return ResultOrError<T, E>.Error(result.error!);
         }
 
         return await next();
@@ -99,9 +100,9 @@ public static class SuccessOrErrorExtensions
         Func<ResultOrError<T, E>> next)
         where E : Error
     {
-        if (first.IsError)
+        if (first.isError)
         {
-            return ResultOrError<T, E>.Error(first.ErrorValue!);
+            return ResultOrError<T, E>.Error(first.error!);
         }
 
         return next();
@@ -113,9 +114,9 @@ public static class SuccessOrErrorExtensions
         where E : Error
     {
         var result = await first;
-        if (result.IsError)
+        if (result.isError)
         {
-            return ResultOrError<T, E>.Error(result.ErrorValue!);
+            return ResultOrError<T, E>.Error(result.error!);
         }
 
         return next();
@@ -126,9 +127,9 @@ public static class SuccessOrErrorExtensions
         Func<Task<T>> next)
         where E : Error
     {
-        if (first.IsError)
+        if (first.isError)
         {
-            return ResultOrError<T, E>.Error(first.ErrorValue!);
+            return ResultOrError<T, E>.Error(first.error!);
         }
 
         var value = await next();
@@ -141,9 +142,9 @@ public static class SuccessOrErrorExtensions
         where E : Error
     {
         var result = await first;
-        if (result.IsError)
+        if (result.isError)
         {
-            return ResultOrError<T, E>.Error(result.ErrorValue!);
+            return ResultOrError<T, E>.Error(result.error!);
         }
 
         var value = await next();
@@ -155,9 +156,9 @@ public static class SuccessOrErrorExtensions
         Func<T> next)
         where E : Error
     {
-        if (first.IsError)
+        if (first.isError)
         {
-            return ResultOrError<T, E>.Error(first.ErrorValue!);
+            return ResultOrError<T, E>.Error(first.error!);
         }
 
         return ResultOrError<T, E>.Success(next());
@@ -169,12 +170,11 @@ public static class SuccessOrErrorExtensions
         where E : Error
     {
         var result = await first;
-        if (result.IsError)
+        if (result.isError)
         {
-            return ResultOrError<T, E>.Error(result.ErrorValue!);
+            return ResultOrError<T, E>.Error(result.error!);
         }
 
         return ResultOrError<T, E>.Success(next());
     }
 }
-
