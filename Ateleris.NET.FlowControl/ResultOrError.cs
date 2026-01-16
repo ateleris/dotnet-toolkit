@@ -64,8 +64,15 @@ public class ResultOrError<T, E> where E : Error?
 
     public Task MatchActionAsync(Action<T> f1, Action<E> f2)
     {
-        if (isError) f2(error!);
-        else f1(tVal!);
+        if (isError)
+        {
+            f2(error!);
+        }
+        else
+        {
+            f1(tVal!);
+        }
+
         return Task.CompletedTask;
     }
 
@@ -74,7 +81,11 @@ public class ResultOrError<T, E> where E : Error?
 
     public Task MatchActionAsync(Func<T, Task> f1, Action<E> f2)
     {
-        if (isError) return f1(tVal!);
+        if (isError)
+        {
+            return f1(tVal!);
+        }
+
         f2(error!);
         return Task.CompletedTask;
     }
@@ -110,7 +121,6 @@ public class ResultOrError<T, E> where E : Error?
 
 public static class ResultOrErrorExtensions
 {
-    // Then for Task<ResultOrError<T, E>> -> passes T to next function
     public static async Task<ResultOrError<TOut, E>> Then<TIn, TOut, E>(
         this Task<ResultOrError<TIn, E>> first,
         Func<TIn, Task<ResultOrError<TOut, E>>> next)
@@ -118,24 +128,26 @@ public static class ResultOrErrorExtensions
     {
         var result = await first;
         if (result.IsError)
+        {
             return ResultOrError<TOut, E>.Error(result.ErrorValue);
+        }
 
         return await next(result.Value);
     }
 
-    // Then for ResultOrError<T, E> -> passes T to next function
     public static async Task<ResultOrError<TOut, E>> Then<TIn, TOut, E>(
         this ResultOrError<TIn, E> first,
         Func<TIn, Task<ResultOrError<TOut, E>>> next)
         where E : Error
     {
         if (first.IsError)
+        {
             return ResultOrError<TOut, E>.Error(first.ErrorValue);
+        }
 
         return await next(first.Value);
     }
 
-    // Then for Task<ResultOrError<T, E>> with synchronous next function
     public static async Task<ResultOrError<TOut, E>> Then<TIn, TOut, E>(
         this Task<ResultOrError<TIn, E>> first,
         Func<TIn, ResultOrError<TOut, E>> next)
@@ -143,24 +155,26 @@ public static class ResultOrErrorExtensions
     {
         var result = await first;
         if (result.IsError)
+        {
             return ResultOrError<TOut, E>.Error(result.ErrorValue);
+        }
 
         return next(result.Value);
     }
 
-    // Then for ResultOrError<T, E> with synchronous next function
     public static ResultOrError<TOut, E> Then<TIn, TOut, E>(
         this ResultOrError<TIn, E> first,
         Func<TIn, ResultOrError<TOut, E>> next)
         where E : Error
     {
         if (first.IsError)
+        {
             return ResultOrError<TOut, E>.Error(first.ErrorValue);
+        }
 
         return next(first.Value);
     }
 
-    // Convert ResultOrError<T, E> to SuccessOrError<E> with async function that takes T
     public static async Task<SuccessOrError<E>> Then<T, E>(
         this Task<ResultOrError<T, E>> first,
         Func<T, Task<SuccessOrError<E>>> next)
@@ -168,12 +182,13 @@ public static class ResultOrErrorExtensions
     {
         var result = await first;
         if (result.IsError)
+        {
             return SuccessOrError<E>.Error(result.ErrorValue);
+        }
 
         return await next(result.Value);
     }
 
-    // Convert ResultOrError<T, E> to SuccessOrError<E> with sync function that takes T
     public static async Task<SuccessOrError<E>> Then<T, E>(
         this Task<ResultOrError<T, E>> first,
         Func<T, SuccessOrError<E>> next)
@@ -181,55 +196,101 @@ public static class ResultOrErrorExtensions
     {
         var result = await first;
         if (result.IsError)
+        {
             return SuccessOrError<E>.Error(result.ErrorValue);
+        }
 
         return next(result.Value);
     }
 
-    // Convert ResultOrError<T, E> to SuccessOrError<E> with async function that takes T (non-Task version)
     public static async Task<SuccessOrError<E>> Then<T, E>(
         this ResultOrError<T, E> first,
         Func<T, Task<SuccessOrError<E>>> next)
         where E : Error
     {
         if (first.IsError)
+        {
             return SuccessOrError<E>.Error(first.ErrorValue);
+        }
 
         return await next(first.Value);
     }
 
-    // Convert ResultOrError<T, E> to SuccessOrError<E> with sync function that takes T (non-Task version)
     public static SuccessOrError<E> Then<T, E>(
         this ResultOrError<T, E> first,
         Func<T, SuccessOrError<E>> next)
         where E : Error
     {
         if (first.IsError)
+        {
             return SuccessOrError<E>.Error(first.ErrorValue);
+        }
 
         return next(first.Value);
     }
 
-    // Discard the result value and convert ResultOrError<T, E> to SuccessOrError<E>
     public static async Task<SuccessOrError<E>> ToSuccessOrError<T, E>(
         this Task<ResultOrError<T, E>> resultTask)
         where E : Error
     {
         var result = await resultTask;
         if (result.IsError)
+        {
             return SuccessOrError<E>.Error(result.ErrorValue);
+        }
 
         return SuccessOrError<E>.Success();
     }
 
-    // Discard the result value and convert ResultOrError<T, E> to SuccessOrError<E> (non-Task version)
     public static SuccessOrError<E> ToSuccessOrError<T, E>(
         this ResultOrError<T, E> result)
         where E : Error
     {
         if (result.IsError)
+        {
             return SuccessOrError<E>.Error(result.ErrorValue);
+        }
 
         return SuccessOrError<E>.Success();
+    }
+
+    public static async Task<TOut> Match<T, E, TOut>(
+        this Task<ResultOrError<T, E>> task,
+        Func<T, TOut> onSuccess,
+        Func<E, TOut> onError)
+        where E : Error
+    {
+        var result = await task;
+        return result.IsSuccess ? onSuccess(result.Value) : onError(result.ErrorValue);
+    }
+
+    public static async Task<TOut> Match<T, E, TOut>(
+        this Task<ResultOrError<T, E>> task,
+        Func<T, Task<TOut>> onSuccess,
+        Func<E, TOut> onError)
+        where E : Error
+    {
+        var result = await task;
+        return result.IsSuccess ? await onSuccess(result.Value) : onError(result.ErrorValue);
+    }
+
+    public static async Task<TOut> Match<T, E, TOut>(
+        this Task<ResultOrError<T, E>> task,
+        Func<T, TOut> onSuccess,
+        Func<E, Task<TOut>> onError)
+        where E : Error
+    {
+        var result = await task;
+        return result.IsSuccess ? onSuccess(result.Value) : await onError(result.ErrorValue);
+    }
+
+    public static async Task<TOut> Match<T, E, TOut>(
+        this Task<ResultOrError<T, E>> task,
+        Func<T, Task<TOut>> onSuccess,
+        Func<E, Task<TOut>> onError)
+        where E : Error
+    {
+        var result = await task;
+        return result.IsSuccess ? await onSuccess(result.Value) : await onError(result.ErrorValue);
     }
 }
