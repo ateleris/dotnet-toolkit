@@ -6,9 +6,9 @@ namespace Ateleris.NET.FlowControl;
 
 public class ResultOrError<T, E> where E : Error?
 {
-    private readonly T? tVal;
-    private readonly E? error;
-    private readonly bool isError;
+    internal readonly T? tVal;
+    internal readonly E? error;
+    internal readonly bool isError;
 
     public ResultOrError(T value)
     {
@@ -38,16 +38,16 @@ public class ResultOrError<T, E> where E : Error?
         error = isError ? this.error : default;
     }
 
-    public Task<U> MatchFuncAsync<U>(Func<T, U> f1, Func<E, U> f2)
+    public Task<U> Match<U>(Func<T, U> f1, Func<E, U> f2)
         => Task.FromResult(!isError ? f1(tVal!) : f2(error!));
 
-    public async Task<U> MatchFuncAsync<U>(Func<T, Task<U>> f1, Func<E, U> f2, CancellationToken ct = default)
+    public async Task<U> Match<U>(Func<T, Task<U>> f1, Func<E, U> f2, CancellationToken ct = default)
         => !isError ? await f1(tVal!).WaitAsync(ct) : f2(error!);
 
-    public async Task<U> MatchFuncAsync<U>(Func<T, U> f1, Func<E, Task<U>> f2, CancellationToken ct = default)
+    public async Task<U> Match<U>(Func<T, U> f1, Func<E, Task<U>> f2, CancellationToken ct = default)
         => !isError ? f1(tVal!) : await f2(error!).WaitAsync(ct);
 
-    public async Task<U> MatchFuncAsync<U>(Func<T, Task<U>> f1, Func<E, Task<U>> f2, CancellationToken ct = default)
+    public async Task<U> Match<U>(Func<T, Task<U>> f1, Func<E, Task<U>> f2, CancellationToken ct = default)
         => !isError ? await f1(tVal!).WaitAsync(ct) : await f2(error!).WaitAsync(ct);
 
     public void MatchAction(Action<T> f1, Action<E> f2)
@@ -62,7 +62,7 @@ public class ResultOrError<T, E> where E : Error?
         }
     }
 
-    public Task MatchActionAsync(Action<T> f1, Action<E> f2)
+    public Task Match(Action<T> f1, Action<E> f2)
     {
         if (isError)
         {
@@ -76,10 +76,10 @@ public class ResultOrError<T, E> where E : Error?
         return Task.CompletedTask;
     }
 
-    public Task MatchActionAsync(Func<T, Task> f1, Func<E, Task> f2)
+    public Task Match(Func<T, Task> f1, Func<E, Task> f2)
         => !isError ? f1(tVal!) : f2(error!);
 
-    public Task MatchActionAsync(Func<T, Task> f1, Action<E> f2)
+    public Task Match(Func<T, Task> f1, Action<E> f2)
     {
         if (isError)
         {
@@ -90,7 +90,7 @@ public class ResultOrError<T, E> where E : Error?
         return Task.CompletedTask;
     }
 
-    public Task MatchActionAsync(Action<T> f1, Func<E, Task> f2)
+    public Task Match(Action<T> f1, Func<E, Task> f2)
     {
         if (isError)
         {
@@ -109,14 +109,6 @@ public class ResultOrError<T, E> where E : Error?
     {
         return new ResultOrError<T, E>(value);
     }
-
-    public bool IsSuccess => !isError;
-
-    public bool IsError => isError;
-
-    public T Value => !isError ? tVal! : throw new InvalidOperationException("Cannot access Value on an Error result.");
-
-    public E ErrorValue => isError ? error! : throw new InvalidOperationException("Cannot access ErrorValue on a Success result.");
 }
 
 public static class ResultOrErrorExtensions
@@ -127,12 +119,12 @@ public static class ResultOrErrorExtensions
         where E : Error
     {
         var result = await first;
-        if (result.IsError)
+        if (result.isError)
         {
-            return ResultOrError<TOut, E>.Error(result.ErrorValue);
+            return ResultOrError<TOut, E>.Error(result.error!);
         }
 
-        return await next(result.Value);
+        return await next(result.tVal!);
     }
 
     public static async Task<ResultOrError<TOut, E>> Then<TIn, TOut, E>(
@@ -140,12 +132,12 @@ public static class ResultOrErrorExtensions
         Func<TIn, Task<ResultOrError<TOut, E>>> next)
         where E : Error
     {
-        if (first.IsError)
+        if (first.isError)
         {
-            return ResultOrError<TOut, E>.Error(first.ErrorValue);
+            return ResultOrError<TOut, E>.Error(first.error!);
         }
 
-        return await next(first.Value);
+        return await next(first.tVal!);
     }
 
     public static async Task<ResultOrError<TOut, E>> Then<TIn, TOut, E>(
@@ -154,12 +146,12 @@ public static class ResultOrErrorExtensions
         where E : Error
     {
         var result = await first;
-        if (result.IsError)
+        if (result.isError)
         {
-            return ResultOrError<TOut, E>.Error(result.ErrorValue);
+            return ResultOrError<TOut, E>.Error(result.error!);
         }
 
-        return next(result.Value);
+        return next(result.tVal!);
     }
 
     public static ResultOrError<TOut, E> Then<TIn, TOut, E>(
@@ -167,12 +159,12 @@ public static class ResultOrErrorExtensions
         Func<TIn, ResultOrError<TOut, E>> next)
         where E : Error
     {
-        if (first.IsError)
+        if (first.isError)
         {
-            return ResultOrError<TOut, E>.Error(first.ErrorValue);
+            return ResultOrError<TOut, E>.Error(first.error!);
         }
 
-        return next(first.Value);
+        return next(first.tVal!);
     }
 
     public static async Task<SuccessOrError<E>> Then<T, E>(
@@ -181,12 +173,12 @@ public static class ResultOrErrorExtensions
         where E : Error
     {
         var result = await first;
-        if (result.IsError)
+        if (result.isError)
         {
-            return SuccessOrError<E>.Error(result.ErrorValue);
+            return SuccessOrError<E>.Error(result.error!);
         }
 
-        return await next(result.Value);
+        return await next(result.tVal!);
     }
 
     public static async Task<SuccessOrError<E>> Then<T, E>(
@@ -195,12 +187,12 @@ public static class ResultOrErrorExtensions
         where E : Error
     {
         var result = await first;
-        if (result.IsError)
+        if (result.isError)
         {
-            return SuccessOrError<E>.Error(result.ErrorValue);
+            return SuccessOrError<E>.Error(result.error!);
         }
 
-        return next(result.Value);
+        return next(result.tVal!);
     }
 
     public static async Task<SuccessOrError<E>> Then<T, E>(
@@ -208,12 +200,12 @@ public static class ResultOrErrorExtensions
         Func<T, Task<SuccessOrError<E>>> next)
         where E : Error
     {
-        if (first.IsError)
+        if (first.isError)
         {
-            return SuccessOrError<E>.Error(first.ErrorValue);
+            return SuccessOrError<E>.Error(first.error!);
         }
 
-        return await next(first.Value);
+        return await next(first.tVal!);
     }
 
     public static SuccessOrError<E> Then<T, E>(
@@ -221,12 +213,12 @@ public static class ResultOrErrorExtensions
         Func<T, SuccessOrError<E>> next)
         where E : Error
     {
-        if (first.IsError)
+        if (first.isError)
         {
-            return SuccessOrError<E>.Error(first.ErrorValue);
+            return SuccessOrError<E>.Error(first.error!);
         }
 
-        return next(first.Value);
+        return next(first.tVal!);
     }
 
     public static async Task<SuccessOrError<E>> ToSuccessOrError<T, E>(
@@ -234,9 +226,9 @@ public static class ResultOrErrorExtensions
         where E : Error
     {
         var result = await resultTask;
-        if (result.IsError)
+        if (result.isError)
         {
-            return SuccessOrError<E>.Error(result.ErrorValue);
+            return SuccessOrError<E>.Error(result.error!);
         }
 
         return SuccessOrError<E>.Success();
@@ -246,9 +238,9 @@ public static class ResultOrErrorExtensions
         this ResultOrError<T, E> result)
         where E : Error
     {
-        if (result.IsError)
+        if (result.isError)
         {
-            return SuccessOrError<E>.Error(result.ErrorValue);
+            return SuccessOrError<E>.Error(result.error!);
         }
 
         return SuccessOrError<E>.Success();
@@ -261,7 +253,7 @@ public static class ResultOrErrorExtensions
         where E : Error
     {
         var result = await task;
-        return result.IsSuccess ? onSuccess(result.Value) : onError(result.ErrorValue);
+        return !result.isError ? onSuccess(result.tVal!) : onError(result.error!);
     }
 
     public static async Task<TOut> Match<T, E, TOut>(
@@ -271,7 +263,7 @@ public static class ResultOrErrorExtensions
         where E : Error
     {
         var result = await task;
-        return result.IsSuccess ? await onSuccess(result.Value) : onError(result.ErrorValue);
+        return !result.isError ? await onSuccess(result.tVal!) : onError(result.error!);
     }
 
     public static async Task<TOut> Match<T, E, TOut>(
@@ -281,7 +273,7 @@ public static class ResultOrErrorExtensions
         where E : Error
     {
         var result = await task;
-        return result.IsSuccess ? onSuccess(result.Value) : await onError(result.ErrorValue);
+        return !result.isError ? onSuccess(result.tVal!) : await onError(result.error!);
     }
 
     public static async Task<TOut> Match<T, E, TOut>(
@@ -291,6 +283,6 @@ public static class ResultOrErrorExtensions
         where E : Error
     {
         var result = await task;
-        return result.IsSuccess ? await onSuccess(result.Value) : await onError(result.ErrorValue);
+        return !result.isError ? await onSuccess(result.tVal!) : await onError(result.error!);
     }
 }

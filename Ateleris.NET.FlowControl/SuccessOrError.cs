@@ -3,52 +3,25 @@ using System.Threading.Tasks;
 
 namespace Ateleris.NET.FlowControl;
 
-public class SuccessOrError<E>
+public class SuccessOrError<E> : ResultOrError<bool, E> where E : Error?
 {
-    internal readonly E? error;
-    internal readonly bool isError;
-
-    public SuccessOrError()
+    public SuccessOrError() : base(true)
     {
-        isError = false;
     }
 
-    public SuccessOrError(E error)
+    public SuccessOrError(E error) : base(error)
     {
-        this.error = error;
-        isError = true;
     }
 
     public static SuccessOrError<E> Success() => new();
 
-    public static SuccessOrError<E> Error(E value) => new(value);
+    public new static SuccessOrError<E> Error(E value) => new(value);
 
     public static implicit operator SuccessOrError<E>(E value) => new(value);
 
     public void Deconstruct(out E? error)
     {
         error = isError ? this.error : default;
-    }
-
-    public async Task<SuccessOrError<E>> Then(Func<Task<SuccessOrError<E>>> next)
-    {
-        if (isError)
-        {
-            return this;
-        }
-
-        return await next();
-    }
-
-    public static async Task<SuccessOrError<E>> Then(Task<SuccessOrError<E>> first, Func<Task<SuccessOrError<E>>> next)
-    {
-        var result = await first;
-        if (result.isError)
-        {
-            return result;
-        }
-
-        return await next();
     }
 }
 
@@ -221,7 +194,7 @@ public static class SuccessOrErrorExtensions
         where E : Error
     {
         var result = await task;
-        return result.isError ? onError(result.error!) : onSuccess();
+        return result.Match(onSuccess, onError);
     }
 
     public static async Task<TOut> Match<E, TOut>(
@@ -231,7 +204,7 @@ public static class SuccessOrErrorExtensions
         where E : Error
     {
         var result = await task;
-        return result.isError ? onError(result.error!) : await onSuccess();
+        return await result.Match(onSuccess, onError);
     }
 
     public static async Task<TOut> Match<E, TOut>(
@@ -241,7 +214,7 @@ public static class SuccessOrErrorExtensions
         where E : Error
     {
         var result = await task;
-        return result.isError ? await onError(result.error!) : onSuccess();
+        return await result.Match(onSuccess, onError);
     }
 
     public static async Task<TOut> Match<E, TOut>(
@@ -251,6 +224,6 @@ public static class SuccessOrErrorExtensions
         where E : Error
     {
         var result = await task;
-        return result.isError ? await onError(result.error!) : await onSuccess();
+        return await result.Match(onSuccess, onError);
     }
 }
