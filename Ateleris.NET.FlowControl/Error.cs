@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Diagnostics;
@@ -8,71 +6,37 @@ namespace Ateleris.NET.FlowControl;
 
 public class Error
 {
-    public static Error New(string message) => new()
+    protected Error() { }
+
+    public ImmutableList<Error>? ChildErrors { get; init; } = null;
+
+    public string Code
     {
-        Message = message
-    };
+        get
+        {
+            if (string.IsNullOrEmpty(field))
+            {
+                return GetType().Name;
+            }
+            return field;
+        }
+        protected init;
+    }
 
-    public static Error New(Exception ex) => new()
-    {
-        Message = ex.Message
-    };
-
-    public required string Message { get; init; }
-
-    public override string ToString() => $"Error: {Message}";
-}
-
-public class Error<TErrorType> : Error
-{
-    public ImmutableList<Error<TErrorType>>? ChildErrors { get; init; }
-
-    public static Error<TErrorType> New(string message, TErrorType? type = default) => new()
-    {
-        Message = message,
-        Type = type
-    };
-
-    public static Error<TErrorType> New(TErrorType? type) => new()
-    {
-        Message = string.Empty,
-        Type = type
-    };
-
-    public static Error<TErrorType> New(Exception ex, TErrorType? type = default) => new()
-    {
-        Message = ex.Message,
-        Type = type
-    };
-
-    public static Error<TErrorType> Composite(string message, TErrorType type, params Error<TErrorType>[] errors) => new()
-    {
-        Message = message,
-        Type = type,
-        ChildErrors = [.. errors]
-    };
-
-    public static Error<TErrorType> Composite(string message, TErrorType type, IEnumerable<Error<TErrorType>> errors) => new()
-    {
-        Message = message,
-        Type = type,
-        ChildErrors = [.. errors]
-    };
+    public string Message { get; init; } = string.Empty;
 
     public bool IsComposite => ChildErrors is not null && ChildErrors.Count > 0;
-
-    public required TErrorType? Type { get; init; } = default;
 
     public override string ToString()
     {
         if (!IsComposite)
         {
-            return $"Error[{Type?.ToString() ?? "-"}]: {Message}";
+            return $"Error[{Code}]: {Message}";
         }
 
         Debug.Assert(ChildErrors is not null, "ChildErros must be initialized when the error is a composite error");
 
-        return $"CompositeError[{Type?.ToString() ?? "-"}]: {Message}\n" +
+        return $"CompositeError[{Code}]: {Message}\n" +
                string.Join("\n", ChildErrors.Select((e, i) => $"  {i + 1}. {e}"));
     }
 }
