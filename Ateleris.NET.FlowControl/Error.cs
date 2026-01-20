@@ -10,18 +10,7 @@ public class Error
 
     public ImmutableList<Error>? ChildErrors { get; init; } = null;
 
-    public string Code
-    {
-        get
-        {
-            if (string.IsNullOrEmpty(field))
-            {
-                return GetType().Name;
-            }
-            return field;
-        }
-        protected init;
-    }
+    private string Code => GetType().Name;
 
     public string Message { get; init; } = string.Empty;
 
