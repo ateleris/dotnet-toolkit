@@ -1,10 +1,10 @@
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 using Ateleris.NET.Shared.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Ateleris.NET.Shared.Extensions;
 

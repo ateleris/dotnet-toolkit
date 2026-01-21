@@ -1,12 +1,12 @@
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 using MailKit.Net.Smtp;
 using MailKit.Security;
-using MimeKit;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
-using System;
-using System.Threading.Tasks;
-using System.Threading;
+using Microsoft.Extensions.Logging;
+using MimeKit;
 
 namespace Ateleris.NET.Shared.Services;
 

@@ -40,14 +40,18 @@ public class EnumUtilGenerator : IIncrementalGenerator
         var semanticModel = context.SemanticModel;
 
         if (semanticModel.GetDeclaredSymbol(enumDeclaration) is not INamedTypeSymbol enumSymbol)
+        {
             return null;
+        }
 
         var generateEnumUtilsAttribute = enumSymbol.GetAttributes()
             .FirstOrDefault(attr => attr.AttributeClass?.Name == "GenerateEnumUtils" &&
                                    attr.AttributeClass.ContainingNamespace.ToDisplayString() == "Ateleris.NET.Shared.Attributes");
 
         if (generateEnumUtilsAttribute is null)
+        {
             return null;
+        }
 
         bool useDefaultValue = false;
         string? defaultValue = null;

@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
-using System.Linq;
 using System.Diagnostics;
+using System.Linq;
 
 namespace Ateleris.NET.FlowControl;
 

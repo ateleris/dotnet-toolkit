@@ -11,7 +11,11 @@ public static class HttpResponseHeadersExtensions
 
     public static T? GetHeaderValueSafe<T>(this HttpResponseHeaders headers, string headerName, Func<string, T?> parseFunc)
     {
-        if (!headers.Contains(headerName)) return default;
+        if (!headers.Contains(headerName))
+        {
+            return default;
+        }
+
         var value = headers.GetValues(headerName).FirstOrDefault();
         return value is not null ? parseFunc(value) : default;
     }
