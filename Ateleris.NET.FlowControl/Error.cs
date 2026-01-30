@@ -20,7 +20,7 @@ public class Error
     {
         if (!IsComposite)
         {
-            return $"Error[{Code}]: {Message}";
+            return string.IsNullOrWhiteSpace(Message) ? $"Error[{Code}]" : $"Error[{Code}]: {Message}";
         }
 
         Debug.Assert(ChildErrors is not null, "ChildErros must be initialized when the error is a composite error");
