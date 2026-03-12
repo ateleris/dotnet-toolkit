@@ -13,7 +13,7 @@ public class VersionedSwaggerConfigureOptions(IApiVersionDescriptionProvider pro
         {
             options.SwaggerDoc(
                 desc.GroupName,
-                new Microsoft.OpenApi.Models.OpenApiInfo
+                new Microsoft.OpenApi.OpenApiInfo
                 {
                     Title = "API Doc",
                     Version = desc.ApiVersion.ToString(),
