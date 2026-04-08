@@ -232,3 +232,4 @@ _Pvt_Extensions
 .fake/
 
 BackgroundServices/data/*.csv
+*.csproj.lscache
