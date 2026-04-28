@@ -222,6 +222,16 @@ public class {info.EnumName}Converter : JsonConverter<{info.EnumName}>
         Utf8JsonWriter writer,
         {info.EnumName} value,
         JsonSerializerOptions options) => writer.WriteStringValue({info.EnumName}Utils.ToString(value));
+
+    public override {info.EnumName} ReadAsPropertyName(
+        ref Utf8JsonReader reader,
+        Type typeToConvert,
+        JsonSerializerOptions options) => {info.EnumName}Utils.FromString(reader.GetString() ?? string.Empty);
+
+    public override void WriteAsPropertyName(
+        Utf8JsonWriter writer,
+        {info.EnumName} value,
+        JsonSerializerOptions options) => writer.WritePropertyName({info.EnumName}Utils.ToString(value));
 }}");
 
         return sb.ToString();
