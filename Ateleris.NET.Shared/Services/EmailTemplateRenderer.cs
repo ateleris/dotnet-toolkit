@@ -11,7 +11,7 @@ public class EmailTemplateRenderer(EmailTemplateOptions? options = null)
     {
         var content = new StringBuilder();
         content.Append(FormatElement(_options.TitleFormat, title));
-        content.Append(FormatElement(_options.ContentFormat, $"<p>{message}</p>"));
+        content.Append(FormatElement(_options.ContentFormat, $"<p>{ConvertNewlinesToHtml(message)}</p>"));
 
         if (!string.IsNullOrEmpty(buttonUrl) && !string.IsNullOrEmpty(buttonText))
         {
@@ -27,7 +27,7 @@ public class EmailTemplateRenderer(EmailTemplateOptions? options = null)
     {
         var content = new StringBuilder();
         content.Append(FormatElement(_options.TitleFormat, title));
-        content.Append(FormatElement(_options.ContentFormat, $"<p>{message}</p>"));
+        content.Append(FormatElement(_options.ContentFormat, $"<p>{ConvertNewlinesToHtml(message)}</p>"));
         content.Append(FormatElement(_options.CodeFormat, code));
         content.Append(FormatElement(_options.FooterFormat, DateTime.Now.Year, _options.Domain));
 
@@ -42,6 +42,11 @@ public class EmailTemplateRenderer(EmailTemplateOptions? options = null)
     private static string FormatElement(string format, params object[] args)
     {
         return string.Format(format, args);
+    }
+
+    private static string ConvertNewlinesToHtml(string text)
+    {
+        return text.Replace("\r\n", "<br>").Replace("\n", "<br>").Replace("\r", "<br>");
     }
 }
 
