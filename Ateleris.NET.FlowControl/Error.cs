@@ -4,10 +4,8 @@ using System.Linq;
 
 namespace Ateleris.NET.FlowControl;
 
-public class Error
+public abstract class Error
 {
-    protected Error() { }
-
     public ImmutableList<Error>? ChildErrors { get; init; } = null;
 
     private string Code => GetType().Name;
