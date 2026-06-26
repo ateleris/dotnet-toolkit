@@ -1,7 +1,5 @@
 namespace Ateleris.NET.Shared.Attributes;
 
-using System;
-
 [System.AttributeUsage(System.AttributeTargets.Enum)]
 public class GenerateEnumUtils : System.Attribute
 {

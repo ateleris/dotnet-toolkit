@@ -10,15 +10,15 @@ public class EmailTemplateRenderer(EmailTemplateOptions? options = null)
     public string RenderStandardEmail(string title, string message, string buttonUrl, string buttonText)
     {
         var content = new StringBuilder();
-        content.Append(FormatElement(_options.TitleFormat, title));
-        content.Append(FormatElement(_options.ContentFormat, $"<p>{message}</p>"));
+        _ = content.Append(FormatElement(_options.TitleFormat, title));
+        _ = content.Append(FormatElement(_options.ContentFormat, $"<p>{message}</p>"));
 
         if (!string.IsNullOrEmpty(buttonUrl) && !string.IsNullOrEmpty(buttonText))
         {
-            content.Append(FormatElement(_options.ButtonFormat, buttonUrl, buttonText));
+            _ = content.Append(FormatElement(_options.ButtonFormat, buttonUrl, buttonText));
         }
 
-        content.Append(FormatElement(_options.FooterFormat, DateTime.Now.Year, _options.Domain));
+        _ = content.Append(FormatElement(_options.FooterFormat, DateTime.Now.Year, _options.Domain));
 
         return WrapInContainer(content.ToString());
     }
@@ -26,10 +26,10 @@ public class EmailTemplateRenderer(EmailTemplateOptions? options = null)
     public string RenderCodeEmail(string title, string message, string code)
     {
         var content = new StringBuilder();
-        content.Append(FormatElement(_options.TitleFormat, title));
-        content.Append(FormatElement(_options.ContentFormat, $"<p>{message}</p>"));
-        content.Append(FormatElement(_options.CodeFormat, code));
-        content.Append(FormatElement(_options.FooterFormat, DateTime.Now.Year, _options.Domain));
+        _ = content.Append(FormatElement(_options.TitleFormat, title));
+        _ = content.Append(FormatElement(_options.ContentFormat, $"<p>{message}</p>"));
+        _ = content.Append(FormatElement(_options.CodeFormat, code));
+        _ = content.Append(FormatElement(_options.FooterFormat, DateTime.Now.Year, _options.Domain));
 
         return WrapInContainer(content.ToString());
     }

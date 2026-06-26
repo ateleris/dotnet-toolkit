@@ -38,7 +38,7 @@ public class IdentityEmailSenderService<TUser, TUserKey>(
                 using var client = new SmtpClient();
                 await client.ConnectAsync(_options.SmtpHost, _options.SmtpPort, SecureSocketOptions.Auto, ct);
                 await client.AuthenticateAsync(_options.Username, _options.Password, ct);
-                await client.SendAsync(m, ct);
+                _ = await client.SendAsync(m, ct);
                 await client.DisconnectAsync(true, ct);
             }
             catch (Exception e)

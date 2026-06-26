@@ -27,17 +27,17 @@ public static class EmailServiceExtensions
         };
         configureTemplates?.Invoke(templateOptions);
 
-        services.AddSingleton(templateOptions);
-        services.AddSingleton<EmailTemplateRenderer>();
+        _ = services.AddSingleton(templateOptions);
+        _ = services.AddSingleton<EmailTemplateRenderer>();
 
-        services.AddTransient<IEmailSender<TUser>, IdentityEmailSenderService<TUser, TUserKey>>();
+        _ = services.AddTransient<IEmailSender<TUser>, IdentityEmailSenderService<TUser, TUserKey>>();
 
         return services;
     }
 
     public static IServiceCollection AddDefaultEmailTemplateProvider(this IServiceCollection services)
     {
-        services.AddSingleton<IEmailTemplateProvider>(new StaticEmailTemplateProvider(new StaticEmailTemplateProviderOptions()));
+        _ = services.AddSingleton<IEmailTemplateProvider>(new StaticEmailTemplateProvider(new StaticEmailTemplateProviderOptions()));
         return services;
     }
 }
