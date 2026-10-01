@@ -216,7 +216,7 @@ public class {info.EnumName}Converter : JsonConverter<{info.EnumName}>
     public override {info.EnumName} Read(
         ref Utf8JsonReader reader,
         Type typeToConvert,
-        JsonSerializerOptions options) => {info.EnumName}Utils.FromString(reader.GetString() ?? string.Empty);
+        JsonSerializerOptions options) => ReadValue(ref reader);
 
     public override void Write(
         Utf8JsonWriter writer,
@@ -226,12 +226,24 @@ public class {info.EnumName}Converter : JsonConverter<{info.EnumName}>
     public override {info.EnumName} ReadAsPropertyName(
         ref Utf8JsonReader reader,
         Type typeToConvert,
-        JsonSerializerOptions options) => {info.EnumName}Utils.FromString(reader.GetString() ?? string.Empty);
+        JsonSerializerOptions options) => ReadValue(ref reader);
 
     public override void WriteAsPropertyName(
         Utf8JsonWriter writer,
         {info.EnumName} value,
         JsonSerializerOptions options) => writer.WritePropertyName({info.EnumName}Utils.ToString(value));
+
+    private static {info.EnumName} ReadValue(ref Utf8JsonReader reader)
+    {{
+        try
+        {{
+            return {info.EnumName}Utils.FromString(reader.GetString() ?? string.Empty);
+        }}
+        catch (ArgumentOutOfRangeException ex)
+        {{
+            throw new JsonException(ex.Message, ex);
+        }}
+    }}
 }}");
 
         return sb.ToString();
