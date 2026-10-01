@@ -253,8 +253,8 @@ public class {info.EnumName}Converter : JsonConverter<{info.EnumName}>
     {
         return caseConversion switch
         {
-            "ToUpper" => ".ToUpper()",
-            "ToLower" => ".ToLower()",
+            "ToUpper" => ".ToUpperInvariant()",
+            "ToLower" => ".ToLowerInvariant()",
             _ => ""
         };
     }
@@ -263,8 +263,8 @@ public class {info.EnumName}Converter : JsonConverter<{info.EnumName}>
     {
         return caseConversion switch
         {
-            "ToUpper" => input.ToUpper(),
-            "ToLower" => input.ToLower(),
+            "ToUpper" => input.ToUpperInvariant(),
+            "ToLower" => input.ToLowerInvariant(),
             _ => input
         };
     }
