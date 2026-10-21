@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace Ateleris.NET.FlowControl;
@@ -27,6 +28,21 @@ public class SuccessOrError<E> : ResultOrError<bool, E> where E : Error?
 
 public static class SuccessOrErrorExtensions
 {
+    public static async Task<SuccessOrError<E>> OnError<E>(
+        this Task<SuccessOrError<E>> op,
+        Func<E, Task> onError)
+        where E : Error
+    {
+        var result = await op;
+        if (result.isError)
+        {
+            Debug.Assert(result.error is not null);
+            await onError(result.error);
+        }
+
+        return result;
+    }
+
     public static async Task<SuccessOrError<E>> Then<E>(
         this Task<SuccessOrError<E>> first,
         Func<Task<SuccessOrError<E>>> next)
